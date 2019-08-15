@@ -1,9 +1,26 @@
 ## Last updated json Aug. 12, 2019
-import pandas as pd
 import spotipy
 import json
+import spotipy.util as util
+import config
+
+scope = 'playlist-modify-public'
+
+## Create auth token
+token = util.prompt_for_user_token(config.username,
+                                   scope,
+                                   client_id=config.ClientID,
+                                   client_secret=config.ClientSecret,
+                                   redirect_uri='http://localhost/')
+sp = spotipy.Spotify(auth=token)
 
 ## helper functions for pl_creator
+def check_playlist(user, pl_name):
+    for playlist in sp.user_playlists(user)['items']:
+        if pl_name == playlist['name']:
+            return playlist['id']
+        else:
+            return create_playlist(user,pl_name)['id']
 def create_playlist(user,name):
     return sp.user_playlist_create(user,name)
 def search_album(album):
@@ -16,7 +33,7 @@ def get_track_ids(album_id):
 ## Takes in a dictionary,username, and playlist name
 ## Returns a playlist with the first track from each album
 def pl_creator(data, user, pl_name):
-    pl_id = create_playlist(user,pl_name)['id']
+    pl_id = check_playlist(user,pl_name)
     album_ids = []
     track_ids = []
     for x in data:
@@ -33,12 +50,3 @@ def pl_creator(data, user, pl_name):
         track_ids.append(get_track_ids(x))
     add_to_playlist(user,pl_id,track_ids[0:99])
     return
-
-def genre_search(data, genres):
-    new = []
-    for x in data:
-        if genres in x['genres']:
-            new.append(x)
-        else:
-            continue
-    return new
