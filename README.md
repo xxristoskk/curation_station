@@ -1,2 +1,5 @@
 # curation_station
-Creates a spotify playlist based on genre information from around the web
+Create a spotify playlist based on genre information from around the web.
+
+Requirements:
+-Spotipy
