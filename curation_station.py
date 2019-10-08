@@ -2,19 +2,22 @@
 import json
 import config
 import functions as f
-
+from tqdm import tqdm
 ## Read json data from web scraping
-with open('big_G.json') as json_data:
+with open('big_G.json1') as json_data:
     glory_data = json.load(json_data)
 with open('bigNo.json') as json_data2:
     nd_data = json.load(json_data2)
-data = glory_data + nd_data
+len(nd_data)
+len(glory_data)
+data = gb + nd
+len(data)
 
 ## Remove for duplicate releases
 def remove_duplicates(data):
     l1 = []
     l2 = []
-    for release in data:
+    for release in tqdm(data):
         if release['album'] in l1:
             continue
         else:
@@ -22,19 +25,23 @@ def remove_duplicates(data):
             l2.append(release)
     return l2
 data = remove_duplicates(data)
+len(data)
+
 ## Helper functions
 ## Takes in data and creates a list of all genres
 def get_genres(data):
     lst = []
     ## List all the tags/gnres you don't want in your playlist
     ## Removing general genres or tags like Electronic or Album will yield more curated results
-    rm_list = ['Album','Single','EP','Experimental','Various Artists','Dubstep','Electronic']
+    # rm_list = ['Album','Single','EP','Experimental','Various Artists','Dubstep','Electronic']
     for x in data:
-        for i in x['genres']:
-            if i in rm_list:
-                x['genres'].remove(i)
+        # for i in x['genres']:
+            # if i in rm_list:
+                # x['genres'].remove(i)
         lst.append(x['genres'])
     return lst
+
+genres = get_genres(data)
 
 ## Takes in dictionary of releases and builds a dictionary of genres
 ## Each genre is a key and its values are another dictionary of genres the key is paired with (neighbors)
@@ -42,7 +49,7 @@ def get_genres(data):
 def genre_dict_builder(data):
     genre_list = get_genres(data)
     genre_dict = {}
-    for genre in genre_list:
+    for genre in tqdm(genre_list):
         for x in range(len(genre)):
             if genre[x-1] not in genre_dict:
                 genre_dict[genre[x-1]] = {}
@@ -50,6 +57,8 @@ def genre_dict_builder(data):
                 genre_dict[genre[x-1]][genre[x]] = 0
             genre_dict[genre[x-1]][genre[x]] += 1
     return genre_dict
+
+genres = genre_dict_builder(data)
 
 # Takes in a dictionary of genres and a list of genres
 # Finds the closest genre neighbors and adds them to a new list (tuned)
@@ -64,9 +73,9 @@ def genre_tuner(dictionary, genres):
         else:
             genre_tuples.append(sorted(dictionary[genre].items(),key=lambda tup: tup[1],reverse=True)[:5]) # sorts tuples in decsending order
     for items in genre_tuples:
-        i=2
+        i=50
         for tup in items:
-            if tup[1] >= i and tup[0] not in genres:
+            if tup[1] in range(0,i) and tup[0] not in genres:
                 i = tup[1]
                 tuned.append(tup[0])
     #Checks for duplicates
@@ -74,7 +83,7 @@ def genre_tuner(dictionary, genres):
         if n not in final:
             final.append(n)
     return final
-
+    
 # Takes in list of releases as dictionaries, along with a list of genres
 # Finds the neighboring genres and if both the neighbors and listed genres are in the releases genre, it is appended to new list
 def curated_data(data, genres):
@@ -88,6 +97,7 @@ def curated_data(data, genres):
                     continue
                 elif neighbor in release['genres'] and genre in release['genres']:
                     new.append(release)
+    new = remove_duplicates(new)
     return new
-
-f.pl_creator(curated_data(data,['Techno','Jungle','Trance','Acid']),config.username,'sept_script')
+curated_data(data,['Techno','Acid'])
+f.pl_creator(curated_data(data,['Techno','Industrial','Acid']),config.username,'hard test')
