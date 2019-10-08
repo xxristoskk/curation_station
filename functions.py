@@ -37,17 +37,28 @@ def pl_creator(data, user, pl_name):
     pl_id = check_playlist(user,pl_name)
     album_ids = []
     track_ids = []
+    ## Search for albums in the dictionary
     for x in data:
         try:
             results = search_album(x['album'])
             album_name = results['albums']['items'][0]['name']
         except:
-            data.remove(x)
+            data.remove(x) ## if the release can't be found on spotify, it is removed from from the search
         if album_name == x['album']:
             album_ids.append(results['albums']['items'][0]['id'])
         else:
             continue
-    for x in album_ids:
-        track_ids.append(get_track_ids(x))
-    add_to_playlist(user,pl_id,track_ids[0:99])
-    return
+    ## Put all found music into the playlist
+    n = len(album_ids)
+    i=0
+    ## Adds 100 songs at a time
+    while i < range(n):
+        for z in range(99):
+            track_ids.append(get_track_ids(album_ids[z]))
+            i+=1
+        add_to_playlist(user,pl_id,track_ids[:99])
+        if i <= n:
+            time.sleep(3)
+            continue
+        else:
+            break
