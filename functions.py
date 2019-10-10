@@ -30,6 +30,8 @@ def add_to_playlist(user, playlist_id, track_id):
     return sp.user_playlist_add_tracks(user, playlist_id, track_id)
 def get_track_ids(album_id):
     return sp.album_tracks(album_id)['items'][0]['id']
+def find_artist(artist_name):
+    return sp.search(q='artist:' + artist_name, type='artist')
 
 ## Takes in a dictionary,username, and playlist name
 ## Returns a playlist with the first track from each album
