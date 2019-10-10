@@ -1,17 +1,18 @@
-## Last updated json Aug. 12, 2019
+## Last updated json Oct 6th. 12, 2019
 import json
 import config
 import functions as f
 from tqdm import tqdm
+
 ## Read json data from web scraping
-with open('big_G.json1') as json_data:
-    glory_data = json.load(json_data)
-with open('bigNo.json') as json_data2:
-    nd_data = json.load(json_data2)
-len(nd_data)
-len(glory_data)
-data = gb + nd
-len(data)
+# with open('big_G.json1') as json_data:
+#     glory_data = json.load(json_data)
+# with open('bigNo.json') as json_data2:
+#     nd_data = json.load(json_data2)
+# len(nd_data)
+# len(glory_data)
+# data = gb + nd
+# len(data)
 
 ## Remove for duplicate releases
 def remove_duplicates(data):
@@ -24,8 +25,6 @@ def remove_duplicates(data):
             l1.append(release['album'])
             l2.append(release)
     return l2
-data = remove_duplicates(data)
-len(data)
 
 ## Helper functions
 ## Takes in data and creates a list of all genres
@@ -41,8 +40,6 @@ def get_genres(data):
         lst.append(x['genres'])
     return lst
 
-genres = get_genres(data)
-
 ## Takes in dictionary of releases and builds a dictionary of genres
 ## Each genre is a key and its values are another dictionary of genres the key is paired with (neighbors)
 ## The value of the neighbors is equal to the number of times the two genres were paired together
@@ -57,8 +54,6 @@ def genre_dict_builder(data):
                 genre_dict[genre[x-1]][genre[x]] = 0
             genre_dict[genre[x-1]][genre[x]] += 1
     return genre_dict
-
-genres = genre_dict_builder(data)
 
 # Takes in a dictionary of genres and a list of genres
 # Finds the closest genre neighbors and adds them to a new list (tuned)
@@ -83,7 +78,7 @@ def genre_tuner(dictionary, genres):
         if n not in final:
             final.append(n)
     return final
-    
+
 # Takes in list of releases as dictionaries, along with a list of genres
 # Finds the neighboring genres and if both the neighbors and listed genres are in the releases genre, it is appended to new list
 def curated_data(data, genres):
@@ -99,5 +94,3 @@ def curated_data(data, genres):
                     new.append(release)
     new = remove_duplicates(new)
     return new
-curated_data(data,['Techno','Acid'])
-f.pl_creator(curated_data(data,['Techno','Industrial','Acid']),config.username,'hard test')
