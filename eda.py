@@ -1,18 +1,53 @@
 import spotipy
 import pandas as pd
+import os
 import json
 import curation_station as cs
 import functions as f
 import pickle
+from tqdm import tqdm
 
 nd = json.load(open('/home/xristsos/Documents/nodata/bigNoOct7.json','r'))
 gb = json.load(open('/home/xristsos/Documents/nodata/glory_oct7.json','r'))
+unsure = pickle.load(open('bc_unsure.pickle','rb'))
 
 data = nd + gb
 data = cs.remove_duplicates(data)
+bc_artist_list = pickle.load(open('bc_artists.pickle','rb'))
 
+##### oauth2 and token refresher because spotify expires your token every hour ####
+''' need to figure out how to refresh the token and then create a function to call within the search_spotify function'''
 
-############### Spotify things ##########################
+def search_spotify(bc_list):
+    """ takes in the list of bandcamp artists and searches for them on spotify
+    if they are on spotify the artist is added to a new list """
+    new_list = pickle.load(open('bc_confirmed.pickle','rb'))
+    fuzzy_list = pickle.load(open('bc_unsure.pickle','rb'))
+    # new_list = []
+    # fuzzy_list = [] ##### for search results that return more than one possible artist -- needs further exploring
+    for artist in tqdm(bc_list):
+        results = f.find_artist(artist)
+        if results['artists']['total'] < 1:
+            continue
+        elif results['artists']['total'] == 1:
+            new_list.append((artist,results['artists']['items'][0]['id']))
+            pickle.dump(new_list,open('bc_confirmed.pickle','wb'))
+        elif results['artists']['total'] > 1:
+            fuzzy_list.append(results)
+            pickle.dump(fuzzy_list,open('bc_unsure.pickle','wb'))
+        else:
+            print('idk something happened')
+    return new_list, fuzzy_list
+overall_total = 1462224
+
+sure,unsure = search_spotify(bc_artist_list[13306:])
+
+sure = pickle.load(open('bc_confirmed.pickle','rb'))
+unsure = pickle.load(open('bc_unsure.pickle','rb'))
+len(sure)
+len(unsure)
+len(sure) + len(unsure)
+############### Spotify search from bandcamp database ##########################
 bc_artist_list = pickle.load(open('bc_artists.pickle','rb'))
 len(bc_artist_list)
 bc_artist_list[-1]
@@ -22,7 +57,7 @@ sp.audio_analysis('5rkfm2WfRFre6LZ5BWAQ5f') ##### very detailed analysis of the 
 ################################################# in the genre. find patterns in song structure, call and response, drops, builds, ect.
 
 ## grab artist ID in items[0]['id']
-find_artist('The Darien Venture') ### if total less than 1 then the artist isn't on spotify
+f.find_artist('The Darien Venture')['artists']['items'][0]['id'] ### if total less than 1 then the artist isn't on spotify
 sp.artist_albums('1XaiQhSCl8fM7PfEwr06st') ## gets the albums from the artist -- needs to be explored to find the first one
 f.get_track_ids('5eletkEtPTsiMKmlcS3TMe') ## returns id of first track from album -- lets grab 2 tracks in the future
 sp.audio_features('55qSasiM8jQSyNo0Hi3gNE') #### This brings back valence dancability and all that stuff -- will use later
