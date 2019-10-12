@@ -1,12 +1,14 @@
 import spotipy
 import pandas as pd
-import os
 import json
 import curation_station as cs
 import functions as f
 import pickle
 from tqdm import tqdm
+import time
+from threading import Timer
 
+##### Load the saved data
 nd = json.load(open('/home/xristsos/Documents/nodata/bigNoOct7.json','r'))
 gb = json.load(open('/home/xristsos/Documents/nodata/glory_oct7.json','r'))
 unsure = pickle.load(open('bc_unsure.pickle','rb'))
@@ -15,16 +17,15 @@ data = nd + gb
 data = cs.remove_duplicates(data)
 bc_artist_list = pickle.load(open('bc_artists.pickle','rb'))
 
-##### oauth2 and token refresher because spotify expires your token every hour ####
-''' need to figure out how to refresh the token and then create a function to call within the search_spotify function'''
-
 def search_spotify(bc_list):
     """ takes in the list of bandcamp artists and searches for them on spotify
     if they are on spotify the artist is added to a new list """
+    t = Timer(3000.0, f.refresh_token())
     new_list = pickle.load(open('bc_confirmed.pickle','rb'))
     fuzzy_list = pickle.load(open('bc_unsure.pickle','rb'))
     # new_list = []
     # fuzzy_list = [] ##### for search results that return more than one possible artist -- needs further exploring
+    t.start()
     for artist in tqdm(bc_list):
         results = f.find_artist(artist)
         if results['artists']['total'] < 1:
@@ -35,18 +36,17 @@ def search_spotify(bc_list):
         elif results['artists']['total'] > 1:
             fuzzy_list.append(results)
             pickle.dump(fuzzy_list,open('bc_unsure.pickle','wb'))
-        else:
-            print('idk something happened')
+        f.refresh_token()
     return new_list, fuzzy_list
-overall_total = 1462224
 
-sure,unsure = search_spotify(bc_artist_list[13306:])
+sure,unsure = search_spotify(bc_artist_list[57958:])
 
 sure = pickle.load(open('bc_confirmed.pickle','rb'))
 unsure = pickle.load(open('bc_unsure.pickle','rb'))
 len(sure)
 len(unsure)
 len(sure) + len(unsure)
+sure[:100]
 ############### Spotify search from bandcamp database ##########################
 bc_artist_list = pickle.load(open('bc_artists.pickle','rb'))
 len(bc_artist_list)
