@@ -20,33 +20,36 @@ bc_artist_list = pickle.load(open('bc_artists.pickle','rb'))
 def search_spotify(bc_list):
     """ takes in the list of bandcamp artists and searches for them on spotify
     if they are on spotify the artist is added to a new list """
-    t = Timer(3000.0, f.refresh_token())
-    new_list = pickle.load(open('bc_confirmed.pickle','rb'))
-    fuzzy_list = pickle.load(open('bc_unsure.pickle','rb'))
-    # new_list = []
-    # fuzzy_list = [] ##### for search results that return more than one possible artist -- needs further exploring
-    t.start()
+    new_list = pickle.load(open('bc_confirmed.pickle','rb')) ### all the artists confirmed to be on spotify
+    # fuzzy_list = pickle.load(open('bc_unsure.pickle','rb')) ### list of search results that totaled more than 1 artist
     for artist in tqdm(bc_list):
+        f.refresh_token()
         results = f.find_artist(artist)
         if results['artists']['total'] < 1:
             continue
         elif results['artists']['total'] == 1:
             new_list.append((artist,results['artists']['items'][0]['id']))
             pickle.dump(new_list,open('bc_confirmed.pickle','wb'))
-        elif results['artists']['total'] > 1:
-            fuzzy_list.append(results)
-            pickle.dump(fuzzy_list,open('bc_unsure.pickle','wb'))
-        f.refresh_token()
-    return new_list, fuzzy_list
-
-sure,unsure = search_spotify(bc_artist_list[57958:])
-
+        # elif results['artists']['total'] > 1:
+        #     fuzzy_list.append(results)
+        #     pickle.dump(fuzzy_list,open('bc_unsure.pickle','wb'))
+    return
+19760+329500
+search_spotify(bc_artist_list[349260:])
 sure = pickle.load(open('bc_confirmed.pickle','rb'))
-unsure = pickle.load(open('bc_unsure.pickle','rb'))
+# unsure = pickle.load(open('bc_unsure.pickle','rb'))
 len(sure)
-len(unsure)
-len(sure) + len(unsure)
-sure[:100]
+# len(unsure)
+# len(sure) + len(unsure)
+hit_list = []
+counter = 0
+for x in tqdm(sure):
+    if x in hit_list and x in sure:
+        counter+=1
+    elif x not in hit_list:
+        hit_list.append(x)
+counter
+
 ############### Spotify search from bandcamp database ##########################
 bc_artist_list = pickle.load(open('bc_artists.pickle','rb'))
 len(bc_artist_list)
