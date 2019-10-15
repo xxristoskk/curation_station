@@ -11,8 +11,6 @@ from threading import Timer
 ##### Load the saved data
 nd = json.load(open('/home/xristsos/Documents/nodata/bigNoOct7.json','r'))
 gb = json.load(open('/home/xristsos/Documents/nodata/glory_oct7.json','r'))
-unsure = pickle.load(open('bc_unsure.pickle','rb'))
-
 data = nd + gb
 data = cs.remove_duplicates(data)
 bc_artist_list = pickle.load(open('bc_artists.pickle','rb'))

@@ -9,18 +9,11 @@ import pandas as pd
 ''' exploring ways to make a function that takes in a list of artist album_ids
     and returns audio features of their top tracks '''
 
-# temp = pickle.load(open('bc_confirmed.pickle','rb'))
-# temp[0][1]
-# f.sp.artist('53giw2tzgMG8eDAmuaxdvR')
-# top_tracks = get_top_tracks('53giw2tzgMG8eDAmuaxdvR')
-# f.sp.audio_features(top_tracks)[0]
-#
 def get_top_tracks(artist_id):
     return [x['id'] for x in f.sp.artist_top_tracks(artist_id)['tracks']]
-f.sp.audio_features(get_top_tracks('0N0d3kjwdY2h7UVuTdJGfp'))
 
-# ''' another function that will take in a list of genres and return a dictionary
-#     in the format {genre: [list of feature dictionaries]} or something like that '''
+''' another function that will take in a list of genres and return a dictionary
+    in the format {genre: [list of feature dictionaries]} or something like that '''
 def spotify_genre_dict(genres):
     dictionary = {}
     for genre in tqdm(genres):
@@ -32,19 +25,15 @@ def spotify_genre_dict(genres):
         dictionary[genre] = {'related_genres': related_genres,
                              'artists': [item for sublist in top_trax for item in sublist],
                              'top_trax_feats': f.sp.audio_features(top_trax)}
-        refresh_token()
+        cs.refresh_token()
     json.dump(dictionary,open('genre_definitions.json','w'))
     return dictionary
-
-g = cs.genre_dict_builder(data)
-g = list(g.keys())
-
-genre_dict = spotify_genre_dict(g)
 
 ###### cleaning the genre list made from the keys of no/gb genre dict #####
 def clean_list(lst):
     clean = []
     for genre in lst:
+        genre = genre.lower()
         if " / " in genre:
             clean.append(genre.split(" / ")[1])
             clean.append(genre.split(" / ")[0])
@@ -53,8 +42,10 @@ def clean_list(lst):
     return clean
 
 g = clean_list(g)
-for i in range(len(g)):
-    g[i] = g[i].lower()
+g = cs.genre_dict_builder(data)
+g = list(g.keys())
+genre_dict = spotify_genre_dict(g)
+
 ####### function to flatten out lists of lists (i made a lot of those and working against time) ######
 ### will fix this during refactoring phase ####
 def flatten_lists(list_of_lists):
