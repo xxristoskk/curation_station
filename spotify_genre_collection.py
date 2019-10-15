@@ -4,7 +4,7 @@ import curation_station as cs
 import functions as f
 import pickle
 from tqdm import tqdm
-
+import pandas as pd
 
 ''' exploring ways to make a function that takes in a list of artist album_ids
     and returns audio features of their top tracks '''
@@ -135,8 +135,117 @@ features_dict['metal'].describe()
 pickle.dump(features_zipped,open('features_eda.pickle','wb'))
 
 
+##### LOAD THE DATA ######
 
-###### TRYING TO MAKE DATAFRAME USING THE GENRE
+stuff = pickle.load(open('features_eda.pickle','rb'))
+len(stuff)
+pd.DataFrame(data=[pd.Series(x[1]) for x in stuff],index=[x[0] for x in stuff])
+
+stuff[0][1].columns
+
+#### SET UP THE DATA, COLUMNS, AND INDEX FOR DF ######
+list_of_genres = [x[0] for x in stuff]
+for item in stuff:
+    item[1].drop(columns=['track_href','id','type','uri'],inplace=True)
+idk = {}
+for item in stuff:
+    idk[item[0]] = item[1]
+idk.keys()
+
+test = stuff[0][1].reset_index().rename(columns={'index':'genre'})
+test['genre'] = 'techno'
+test
+
+#### function takes in the list of tuples and creates a new column 'genre' which is = [0] and the data comes from [1] #####
+def merge_dfs(list_of_df):
+    list_of_genres = [x[0] for x in list_of_df]
+    starter_df = list_of_df[0][1].reset_index().rename(columns={'index':'genre'})
+    starter_df['genre'] = list_of_genres[0]
+    for i in range(1,len(list_of_df)):
+        df = list_of_df[i][1].reset_index().rename(columns={'index':'genre'})
+        df['genre'] = list_of_df[i][0]
+        starter_df = pd.concat([starter_df,df])
+    return starter_df
+
+#### Drop the 'album' row and 'ep' ####
+main_df = merge_dfs(stuff)
+
+averages_df = main_df.groupby('genre').mean()
+median_df = main_df.groupby('genre').median()
+main_df.describe()
+
+main_df.columns
+
+main_df.drop(columns='analysis_url',inplace=True)
+
+main_df
+
+##### some quick plotting
+
+corr = main_df.corr()
+
+import plotly as py
+import plotly.graph_objects as go
+
+import plotly.express as px
+
+# Here we use a column with categorical data
+fig = px.histogram(main_df, x='genre')
+fig.show()
+
+import plotly.express as px
+fig = px.scatter_matrix(main_df)
+fig.show()
+
+
+descriptive_df1 = main_df.groupby('genre').describe()
+
+descriptive_df.min()
+
+#### CLUSTERRS ?? #####
+x = main_df.drop('genre',axis=1)
+from sklearn.cluster import KMeans
+
+km = KMeans(
+    n_clusters=145, init='random',
+    n_init=10, max_iter=300,
+    tol=1e-04, random_state=0
+)
+y_km = km.fit_predict(x)
+
+# plot the 3 clusters
+plt.scatter(
+    x[y_km == 0, 0], x[y_km == 0, 1],
+    s=50, c='lightgreen',
+    marker='s', edgecolor='black',
+    label='cluster 1'
+)
+
+plt.scatter(
+    x[y_km == 1, 0], x[y_km == 1, 1],
+    s=50, c='orange',
+    marker='o', edgecolor='black',
+    label='cluster 2'
+)
+
+plt.scatter(
+    x[y_km == 2, 0], x[y_km == 2, 1],
+    s=50, c='lightblue',
+    marker='v', edgecolor='black',
+    label='cluster 3'
+)
+
+# plot the centroids
+plt.scatter(
+    km.cluster_centers_[:, 0], km.cluster_centers_[:, 1],
+    s=250, marker='*',
+    c='red', edgecolor='black',
+    label='centroids'
+)
+plt.legend(scatterpoints=1)
+plt.grid()
+plt.show()
+
 
 columns = list(genre_df['top_trax_feats'][0][0].keys())
 

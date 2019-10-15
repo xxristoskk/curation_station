@@ -7,39 +7,38 @@ from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 import config
 import time
 
-
 ## Create auth token
 scope = 'playlist-modify-public'
-token = util.prompt_for_user_token(config.username,
-                                   scope,
-                                   client_id=config.ClientID,
-                                   client_secret=config.ClientSecret,
-                                   redirect_uri='http://localhost/')
-sp = spotipy.Spotify(auth=token)
+# token = util.prompt_for_user_token(config.username,
+#                                    scope,
+#                                    client_id=config.ClientID,
+#                                    client_secret=config.ClientSecret,
+#                                    redirect_uri='http://localhost/')
+# sp = spotipy.Spotify(auth=token)
 
 ##################### oauth2 for token refreshing (work in progress) ###########################
 ####### is_token_expired attribute isn't working for spotipy so declaring it from the latest version oauth2.py on the github
-# def is_token_expired(token_info):
-#     now = int(time.time())
-#     return token_info['expires_at'] - now < 60
-#
-# oauth = SpotifyOAuth(client_id=config.ClientID,client_secret=config.ClientSecret,redirect_uri='http://localhost/',scope=scope)
-# token_info = oauth.get_cached_token()
-# if not token_info:
-#     auth_url = oauth.get_authorize_url()
-#     print(auth_url)
-#     response = input('Paste the above link into your browser, then paste the redirect url here: ')
-#     code = oauth.parse_response_code(response)
-#     token_info = oauth.get_access_token(code)
-#     token = token_info['access_token']
-# sp = spotipy.Spotify(auth=token)
+def is_token_expired(token_info):
+    now = int(time.time())
+    return token_info['expires_at'] - now < 60
 
-# def refresh_token():
-#     global token_info, sp
-#     if is_token_expired(token_info):
-#         token_info = oauth.refresh_access_token(token_info['refresh_token'])
-#         token = token_info['access_token']
-#         sp = spotipy.Spotify(auth=token)
+oauth = SpotifyOAuth(client_id=config.ClientID,client_secret=config.ClientSecret,redirect_uri='http://localhost/',scope=scope)
+token_info = oauth.get_cached_token()
+if not token_info:
+    auth_url = oauth.get_authorize_url()
+    print(auth_url)
+    response = input('Paste the above link into your browser, then paste the redirect url here: ')
+    code = oauth.parse_response_code(response)
+    token_info = oauth.get_access_token(code)
+    token = token_info['access_token']
+sp = spotipy.Spotify(auth=token)
+
+def refresh_token():
+    global token_info, sp
+    if is_token_expired(token_info):
+        token_info = oauth.refresh_access_token(token_info['refresh_token'])
+        token = token_info['access_token']
+        sp = spotipy.Spotify(auth=token)
 
 
 ## helper functions for pl_creator

@@ -100,16 +100,6 @@ len(n)
 #     return stupid_list
 #
 #
-# def clean_list(lst):
-#     clean = []
-#     for genre in lst:
-#         if " / " in genre:
-#             clean.append(genre.split(" / ")[1])
-#             clean.append(genre.split(" / ")[0])
-#         else:
-#             clean.append(genre)
-#     return clean
-#
 #
 # genre_list = clean_list(genre_list)
 #
