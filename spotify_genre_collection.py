@@ -25,7 +25,7 @@ def spotify_genre_dict(genres):
         dictionary[genre] = {'related_genres': related_genres,
                              'artists': [item for sublist in top_trax for item in sublist],
                              'top_trax_feats': f.sp.audio_features(top_trax)}
-        cs.refresh_token()
+        f.refresh_token()
     json.dump(dictionary,open('genre_definitions.json','w'))
     return dictionary
 
@@ -41,13 +41,16 @@ def clean_list(lst):
             clean.append(genre)
     return clean
 
-g = clean_list(g)
 g = cs.genre_dict_builder(data)
 g = list(g.keys())
+g = clean_list(g)
 genre_dict = spotify_genre_dict(g)
+pickle.dump(genre_dict,open('genre_dictionary.pickle','wb'))
+
 
 ####### function to flatten out lists of lists (i made a lot of those and working against time) ######
 ### will fix this during refactoring phase ####
+
 def flatten_lists(list_of_lists):
     return [x for y in list_of_lists for x in y]
 
@@ -55,11 +58,30 @@ def flatten_lists(list_of_lists):
     trying to take the mean (or median) of the features of the subgenres. then taking the mean/median of all those and creating a
     standard defintion of the the root genre is composed of '''
 
-genre_dict['techno'].keys()
-genre_dict['techno']['related_genres']
+genre_dict = pickle.load(open('genre_dictionary.pickle','rb'))
 
+### flatten related genres lists ###
+for k,v in genre_dict.items():
+    v['related_genres'] = flatten_lists(['related_genres'])
 
+#### remove top track features
+def genre_matrix(d):
+    new_dict = {}
+    ### extracting just the root genre and the related genres
+    for k,v in d.items():
+        for i,n in v.items():
+            if i == 'related_genres':
+                new_dict[k] = n
+    for k,v in new_dict.items():
+        if len(v) >= 5:
+            v = flatten_lists(v)
+            v = flatten_lists(v)
+        else:
+            continue
+    return new_dict
 
+genre_matrix = genre_matrix(genre_dict)
+genre_matrix
 
 ###### DATAFRAME WORK CAUTION: UNDER HEAVY CONSTRUCTION ###############
 ''' cleaning the data frame and manipulating it to get the features as the columns and the rows being the genres but the features lists
@@ -70,15 +92,18 @@ genre_df = pd.DataFrame(genre_dict)
 genre_df = genre_df.T.drop(columns='artists')
 genre_df.reset_index(inplace=True)
 genre_df.rename(columns={'index':'genre'},inplace=True)
-for i,row in genre_df.iterrows():
-    genre_df['related_genres'][i] = flatten_lists(genre_df['related_genres'][i])
-for i,row in genre_df.iterrows():
-    if len(genre_df['related_genres'][i]) < 1:
-        genre_df.drop(i, inplace=True)
+# for i,row in genre_df.iterrows():
+#     genre_df['related_genres'][i] = flatten_lists(genre_df['related_genres'][i])
+# for i,row in genre_df.iterrows():
+#     if len(genre_df['related_genres'][i]) < 1:
+#         genre_df.drop(i, inplace=True)
 genre_df.head()
+related_df = genre_df.drop(columns='top_trax_feats')
 
-genre_df.set_index('genre',inplace=True)
-genre_df['top_trax_feats'][0]
+related_df.set_index('genre',inplace=True)
+for i,row in related_df.iterrows():
+    related_df['related_genres'][i] = flatten_lists(related_df['related_genres'][i])
+related_df
 
 def features_dict_builder(list_of_dictionaries):
     new={}
@@ -88,8 +113,6 @@ def features_dict_builder(list_of_dictionaries):
         for k,v in d.items():
             new[k].append(v)
     return new
-
-f = features_dict_builder(genre_df['top_trax_feats'][0])
 
 def series2df(df):
     dfs = []
@@ -117,129 +140,10 @@ genre_df.shape
 genre_df.set_index('genre',inplace=True)
 list_of_genres = list(genre_df.index)
 
-########## THIS IS A VERY IMPORT ZIP ############ it will be the basis for genre EDA before everything is put into one data frame
+########## approach below is best ############
 features_zipped = list(zip(list_of_genres,features))
 # features_dict = {k:v for k,v in features_zipped}
 # list(features_dict.keys())
 features_dict['metal'].describe()
 
 pickle.dump(features_zipped,open('features_eda.pickle','wb'))
-
-
-##### LOAD THE DATA ######
-
-stuff = pickle.load(open('features_eda.pickle','rb'))
-len(stuff)
-pd.DataFrame(data=[pd.Series(x[1]) for x in stuff],index=[x[0] for x in stuff])
-
-stuff[0][1].columns
-
-#### SET UP THE DATA, COLUMNS, AND INDEX FOR DF ######
-list_of_genres = [x[0] for x in stuff]
-for item in stuff:
-    item[1].drop(columns=['track_href','id','type','uri'],inplace=True)
-idk = {}
-for item in stuff:
-    idk[item[0]] = item[1]
-idk.keys()
-
-test = stuff[0][1].reset_index().rename(columns={'index':'genre'})
-test['genre'] = 'techno'
-test
-
-#### function takes in the list of tuples and creates a new column 'genre' which is = [0] and the data comes from [1] #####
-def merge_dfs(list_of_df):
-    list_of_genres = [x[0] for x in list_of_df]
-    starter_df = list_of_df[0][1].reset_index().rename(columns={'index':'genre'})
-    starter_df['genre'] = list_of_genres[0]
-    for i in range(1,len(list_of_df)):
-        df = list_of_df[i][1].reset_index().rename(columns={'index':'genre'})
-        df['genre'] = list_of_df[i][0]
-        starter_df = pd.concat([starter_df,df])
-    return starter_df
-
-#### Drop the 'album' row and 'ep' ####
-main_df = merge_dfs(stuff)
-
-averages_df = main_df.groupby('genre').mean()
-median_df = main_df.groupby('genre').median()
-main_df.describe()
-
-main_df.columns
-
-main_df.drop(columns='analysis_url',inplace=True)
-
-main_df
-
-##### some quick plotting
-
-corr = main_df.corr()
-
-import plotly as py
-import plotly.graph_objects as go
-
-import plotly.express as px
-
-# Here we use a column with categorical data
-fig = px.histogram(main_df, x='genre')
-fig.show()
-
-import plotly.express as px
-fig = px.scatter_matrix(main_df)
-fig.show()
-
-
-descriptive_df1 = main_df.groupby('genre').describe()
-
-descriptive_df.min()
-
-#### CLUSTERRS ?? #####
-x = main_df.drop('genre',axis=1)
-from sklearn.cluster import KMeans
-
-km = KMeans(
-    n_clusters=145, init='random',
-    n_init=10, max_iter=300,
-    tol=1e-04, random_state=0
-)
-y_km = km.fit_predict(x)
-
-# plot the 3 clusters
-plt.scatter(
-    x[y_km == 0, 0], x[y_km == 0, 1],
-    s=50, c='lightgreen',
-    marker='s', edgecolor='black',
-    label='cluster 1'
-)
-
-plt.scatter(
-    x[y_km == 1, 0], x[y_km == 1, 1],
-    s=50, c='orange',
-    marker='o', edgecolor='black',
-    label='cluster 2'
-)
-
-plt.scatter(
-    x[y_km == 2, 0], x[y_km == 2, 1],
-    s=50, c='lightblue',
-    marker='v', edgecolor='black',
-    label='cluster 3'
-)
-
-# plot the centroids
-plt.scatter(
-    km.cluster_centers_[:, 0], km.cluster_centers_[:, 1],
-    s=250, marker='*',
-    c='red', edgecolor='black',
-    label='centroids'
-)
-plt.legend(scatterpoints=1)
-plt.grid()
-plt.show()
-
-
-columns = list(genre_df['top_trax_feats'][0][0].keys())
-
-list_of_feats = [x for n in genre_df['top_trax_feats'] for x in n]
-
-pd.DataFrame(list_of_feats[0],index=list(genre_df.index))
