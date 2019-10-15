@@ -6,6 +6,10 @@ import pickle
 import time
 
 ### artist index scrape ###
+''' this function takes a number representing the number of pages needed to be scraped
+    and iterates the scraping process for each page. the returned data is a list of all the
+    artist names that are in the bandcamp artist index and will be used as a reference when
+    looking for new artists to match search parameters '''
 def get_all_artists(pages):
     artist_list = []
     for i in tqdm(range(1, pages)):
@@ -72,6 +76,7 @@ len(n)
 #
 #
 # ### bandcamp scrape function ###
+# ######## used to find trending diy artists on bandcamp
 # def scrape_bc(genres):
 #     bc_list = []
 #     for genre in tqdm(genres):
@@ -85,6 +90,7 @@ len(n)
 #         all_titles = [x.find('div').get_text() for x in all_releases]
 #
 #         ## cleaner functions
+          ##### for whatever reason, the cleaner functions don't clean the first time around but work when the list is ran through twice
 #         all_artists = clean_artists(all_artists)
 #         all_artists = clean_artists(all_artists)
 #         all_titles = clean_titles(all_titles)
@@ -94,10 +100,10 @@ len(n)
 #         for i in range(len(all_artists)):
 #             dictionary = {'artist': all_artists[i],
 #                           'album': all_titles[i],
-#                           'genres': genre}
+#                           'genre': genre}
 #             bc_list.append(dictionary)
 #         time.sleep(1)
-#     return stupid_list
+#     return bc_list
 #
 #
 # def clean_list(lst):

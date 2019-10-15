@@ -34,13 +34,10 @@ def search_spotify(bc_list):
         #     fuzzy_list.append(results)
         #     pickle.dump(fuzzy_list,open('bc_unsure.pickle','wb'))
     return
-19760+329500
-search_spotify(bc_artist_list[349260:])
+search_spotify(bc_artist_list[548635:])
 sure = pickle.load(open('bc_confirmed.pickle','rb'))
-# unsure = pickle.load(open('bc_unsure.pickle','rb'))
 len(sure)
-# len(unsure)
-# len(sure) + len(unsure)
+##### checking for number of duplicates to handle #####
 hit_list = []
 counter = 0
 for x in tqdm(sure):
