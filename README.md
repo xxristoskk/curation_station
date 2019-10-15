@@ -1,4 +1,4 @@
-# curation_station
+# Curation Station
 Recommendation engine that creates (or appends) a spotify playlist from a growing RDS database of independent/DIY artists.
 
 The goal is to allow people to find new music that is similar to popular artists around the same genre neighborhood.
