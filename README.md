@@ -5,8 +5,8 @@ The goal is to allow people to find new music that is similar to popular artists
 
 Although this is a work in progress, the sample json file still works with the functions.py and curation_station.py scripts.
 
-Coming soon:
+**Coming soon**:
 
-Frontend gui for collaborative filtering. This will allow anyone to easily log in with their Spotify account and start making playlists.
+Frontend GUI for collaborative filtering. This will allow people to login with their Spotify account and start making playlists.
 
 Dashboard and jupyter notebook outlining the process of this project.
