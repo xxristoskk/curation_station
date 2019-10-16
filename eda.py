@@ -1,12 +1,9 @@
-import spotipy
-import pandas as pd
+import spotipy as sp
 import json
 import curation_station as cs
 import functions as f
 import pickle
 from tqdm import tqdm
-import time
-from threading import Timer
 
 ##### Load the saved data
 nd = json.load(open('/home/xristsos/Documents/nodata/bigNoOct7.json','r'))
@@ -33,8 +30,36 @@ def search_spotify(bc_list):
         #     pickle.dump(fuzzy_list,open('bc_unsure.pickle','wb'))
     return
 search_spotify(bc_artist_list[548635:])
+
 sure = pickle.load(open('bc_confirmed.pickle','rb'))
 len(sure)
+
+f.find_artist
+loa = [x[1] for x in sure]
+len(loa)
+
+def get_bc_info(loa):
+    case_list = []
+    bc_dict = {}
+    for i in tqdm(range(len(loa))):
+        open('new_bc_dict.pickle','a')
+        try:
+            r = f.find_artist(loa[i][0])['artists']['items'][0]
+            bc_dict = {'followers': r['followers']['total'],
+                       'genres': r['genres'],
+                       'id': r['id'],
+                       'artist_name': r['name'],
+                       'popularity': r['popularity']}
+            case_list.append(bc_dict)
+            pickle.dump(case_list,open('new_bc_dict.pickle','wb'))
+        except:
+            print('no longer on spotify')
+    return
+l = pickle.load(open('new_bc_dict.pickle','rb'))
+len(l)
+### run this function later 
+get_bc_info(sure[435:])
+
 ##### checking for number of duplicates to handle #####
 hit_list = []
 counter = 0

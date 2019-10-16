@@ -86,8 +86,4 @@ def pl_creator(data, user, pl_name):
             track_ids.append(get_track_ids(album_ids[z]))
             i+=1
         add_to_playlist(user,pl_id,track_ids[:99])
-        if i <= n:
-            time.sleep(3)
-            continue
-        else:
-            break
+    return

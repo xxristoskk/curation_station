@@ -2,7 +2,6 @@ import requests
 import mysql.connector
 from mysql.connector import errorcode
 import config
-import matplotlib.pyplot as plt
 import pickle
 from tqdm import tqdm
 
@@ -34,4 +33,3 @@ def insert_artists(data):
     return
 
 insert_artists(data)
-        

@@ -1,4 +1,4 @@
-import spotipy
+import spotipy as sp
 import json
 import curation_station as cs
 import functions as f
@@ -17,7 +17,7 @@ def get_top_tracks(artist_id):
 def spotify_genre_dict(genres):
     dictionary = {}
     for genre in tqdm(genres):
-        artist_results = f.sp.search(q=f'genre:{genre}',type='artist')['artists']['items']
+        artist_results = sp.search(q=f'genre:{genre}',type='artist')['artists']['items']
         artists = [(x['name'],x['id']) for x in artist_results]
         related_genres = [x['genres'] for x in artist_results]
         top_trax = [get_top_tracks(id) for artist,id in artists]
