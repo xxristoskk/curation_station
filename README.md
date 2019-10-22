@@ -3,8 +3,10 @@ Recommendation engine that will create (or append to) a spotify playlist from a 
 
 The goal is to allow people to find new music that is similar to popular artists around the same genre neighborhood.
 
-**Coming soon**:
+**The Future**:
 
 Frontend dashboard app made with flask.
 
 Dashboard and jupyter notebook outlining the process of this project.
+
+Train a Hidden Markov Model on spotify's audio analysis data.
