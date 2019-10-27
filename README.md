@@ -5,6 +5,9 @@ The goal is to allow people to find new music that is similar to popular songs a
 
 **The Future**:
 -Complete exploration (see "birthday is a music genre" repo) and clustering of genres for training the model
+
 -Clean and update the independent artists dataset for deployment of database server
+
 -Begin designing and building the front end
+
 -Deploy a soft release (or "alpha") version
